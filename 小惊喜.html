@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神秘礼物</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .page {
+            padding: 30px;
+            display: none;
+            text-align: center;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .separator {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ff6b6b, transparent);
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .modal {
+            position: fixed;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            max-width: 200px;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .modal-title {
+            color: #ff6b6b;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .modal-content {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .modal-hint {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            cursor: pointer;
+        }
+        
+        .music-icon {
+            font-size: 24px;
+            color: #ff6b6b;
+        }
+        
+        .music-icon.muted {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 初始页面 -->
+        <div id="page1" class="page active">
+            <h1>一份神秘礼物</h1>
+            <div class="separator"></div>
+            <h2>神秘的礼物</h2>
+            <p style="margin: 20px 0;">您有一份神秘礼物，确定要打开吗？</p>
+            <button id="openBtn" class="btn">确定</button>
+        </div>
+        
+        <!-- 礼物页面 -->
+        <div id="page2" class="page">
+            <h1>一份神秘礼物</h1>
+            <div class="separator"></div>
+            <h2>给你的特别消息</h2>
+        </div>
+    </div>
+    
+    <!-- 音乐控制 -->
+    <div class="music-control" id="musicControl" style="display: none;">
+        <span class="music-icon" id="musicIcon">♪</span>
+    </div>
+    
+    <!-- 音频元素 -->
+    <audio id="bgMusic" loop>
+        <!-- 这里替换为您自己的音乐文件路径 -->
+        <source src="7499771397531503370.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 页面元素
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+            const openBtn = document.getElementById('openBtn');
+            const musicControl = document.getElementById('musicControl');
+            const musicIcon = document.getElementById('musicIcon');
+            const bgMusic = document.getElementById('bgMusic');
+            
+            // 基础消息数据
+            const baseMessages = [
+                { title: "提示", content: "你超棒的", hint: "梦想成真" },
+                { title: "提示", content: "保持好心情", hint: "我想你了" },
+                { title: "提示", content: "愿所有烦恼都消失", hint: "要相信自己奥" },
+                { title: "提示", content: "今天过得开心嘛", hint: "会蛀断名" },
+                { title: "提示", content: "别太累啦，偶尔偷懒也好", hint: "我想你了" },
+                { title: "提示", content: "早点休息", hint: "早点休息" },
+                { title: "提示", content: "满满", hint: "衣服" },
+                { title: "提示", content: "你是最特别的", hint: "独一无二" },
+                { title: "提示", content: "一切都会好起来的", hint: "加油" },
+                { title: "提示", content: "你笑起来真好看", hint: "多笑笑" },
+                { title: "提示", content: "别忘了照顾好自己", hint: "心疼你" },
+                { title: "提示", content: "今天也要开心呀", hint: "开心最重要" },
+                { title: "提示", content: "你值得被温柔以待", hint: "温柔" },
+                { title: "提示", content: "累了就靠着我", hint: "我在呢" },
+                { title: "提示", content: "你是我最珍贵的礼物", hint: "珍惜" },
+                { title: "提示", content: "每一天都是新的开始", hint: "重新出发" },
+                { title: "提示", content: "你的努力我都看在眼里", hint: "为你骄傲" },
+                { title: "提示", content: "有我在不用担心", hint: "安心" },
+                { title: "提示", content: "你是我的小幸运", hint: "幸运" },
+                { title: "提示", content: "世界因你而美丽", hint: "美丽" },
+                { title: "提示", content: "别忘了微笑", hint: "微笑" },
+                { title: "提示", content: "你是我生命中的阳光", hint: "阳光" },
+                { title: "提示", content: "无论何时我都在", hint: "陪伴" },
+                { title: "提示", content: "你是最棒的", hint: "自信" },
+                { title: "提示", content: "别忘了你的价值", hint: "价值" },
+                { title: "提示", content: "困难都会过去的", hint: "坚持" },
+                { title: "提示", content: "你是不可替代的", hint: "唯一" },
+                { title: "提示", content: "今天也要加油哦", hint: "加油" },
+                { title: "提示", content: "你的存在让世界更美好", hint: "美好" },
+                { title: "提示", content: "我永远支持你", hint: "支持" },
+                { title: "提示", content: "你是我的骄傲", hint: "骄傲" },
+                { title: "提示", content: "别忘了休息", hint: "休息" },
+                { title: "提示", content: "你值得所有的美好", hint: "值得" },
+                { title: "提示", content: "我会一直陪着你", hint: "陪伴" },
+                { title: "提示", content: "你是我的小星星", hint: "闪耀" },
+                { title: "提示", content: "每一天都爱你", hint: "爱" },
+                { title: "提示", content: "你是我最想珍惜的人", hint: "珍惜" },
+                { title: "提示", content: "别忘了你的梦想", hint: "梦想" },
+                { title: "提示", content: "你是我的力量", hint: "力量" },
+                { title: "提示", content: "我会一直守护你", hint: "守护" },
+                { title: "提示", content: "你是我的小确幸", hint: "幸福" },
+                { title: "提示", content: "每一天都想你", hint: "思念" },
+                { title: "提示", content: "你是我最想见的人", hint: "期待" },
+                { title: "提示", content: "别忘了你的初心", hint: "初心" },
+                { title: "提示", content: "你是我的动力", hint: "动力" },
+                { title: "提示", content: "我会一直爱你", hint: "爱" },
+                { title: "提示", content: "你是我的小太阳", hint: "温暖" },
+                { title: "提示", content: "每一天都因你而美好", hint: "美好" },
+                { title: "提示", content: "你是我最想保护的人", hint: "保护" },
+                { title: "提示", content: "别忘了你的价值", hint: "价值" },
+                { title: "提示", content: "你是我的希望", hint: "希望" },
+                { title: "提示", content: "我会一直珍惜你", hint: "珍惜" },
+                { title: "提示", content: "你是我的小天使", hint: "天使" },
+                { title: "提示", content: "每一天都感谢有你", hint: "感恩" },
+                { title: "提示", content: "你是我最想拥抱的人", hint: "拥抱" },
+                { title: "提示", content: "别忘了你的笑容", hint: "笑容" },
+                { title: "提示", content: "你是我的光", hint: "光明" },
+                { title: "提示", content: "我会一直陪伴你", hint: "陪伴" },
+                { title: "提示", content: "你是我的小宝贝", hint: "宝贝" },
+                { title: "提示", content: "每一天都为你祈祷", hint: "祝福" },
+                { title: "提示", content: "你是我最想守护的人", hint: "守护" },
+                { title: "提示", content: "别忘了你的美好", hint: "美好" },
+                { title: "提示", content: "你是我的彩虹", hint: "彩虹" },
+                { title: "提示", content: "我会一直支持你", hint: "支持" },
+                { title: "提示", content: "你是我的小可爱", hint: "可爱" },
+                { title: "提示", content: "每一天都为你加油", hint: "加油" },
+                { title: "提示", content: "你是我最想珍惜的人", hint: "珍惜" },
+                { title: "提示", content: "别忘了你的独特", hint: "独特" },
+                { title: "提示", content: "你是我的星辰", hint: "星辰" },
+                { title: "提示", content: "我会一直爱你", hint: "爱" },
+                { title: "提示", content: "你是我的小甜心", hint: "甜蜜" },
+                { title: "提示", content: "每一天都为你心动", hint: "心动" },
+                { title: "提示", content: "你是我最想陪伴的人", hint: "陪伴" },
+                { title: "提示", content: "别忘了你的魅力", hint: "魅力" },
+                { title: "提示", content: "你是我的月光", hint: "月光" }
+            ];
+            
+            // 将消息数量增加2.5倍
+            let messages = [];
+            for (let i = 0; i < 5; i++) {
+                messages = messages.concat([...baseMessages]);
+            }
+            
+            let isMusicPlaying = false;
+            let modalInterval;
+            
+            // 打开按钮点击事件
+            openBtn.addEventListener('click', function() {
+                page1.classList.remove('active');
+                page2.classList.add('active');
+                musicControl.style.display = 'flex';
+                
+                // 开始显示弹窗
+                startModalSequence();
+                
+                // 尝试播放音乐
+                playMusic();
+            });
+            
+            // 播放音乐
+            function playMusic() {
+                bgMusic.volume = 0.5;
+                
+                // 尝试播放，如果被阻止则显示静音图标
+                const playPromise = bgMusic.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isMusicPlaying = true;
+                        musicIcon.classList.remove('muted');
+                    }).catch(error => {
+                        console.log("自动播放被阻止:", error);
+                        isMusicPlaying = false;
+                        musicIcon.classList.add('muted');
+                    });
+                }
+            }
+            
+            // 音乐控制点击事件
+            musicControl.addEventListener('click', function() {
+                if (isMusicPlaying) {
+                    bgMusic.pause();
+                    isMusicPlaying = false;
+                    musicIcon.classList.add('muted');
+                } else {
+                    bgMusic.play();
+                    isMusicPlaying = true;
+                    musicIcon.classList.remove('muted');
+                }
+            });
+            
+            // 显示弹窗序列
+            function startModalSequence() {
+                let currentIndex = 0;
+                const interval = 100; // 每个弹窗间隔0.1秒
+                
+                // 清除可能存在的旧定时器
+                if (modalInterval) {
+                    clearInterval(modalInterval);
+                }
+                
+                // 创建新定时器
+                modalInterval = setInterval(function() {
+                    if (currentIndex < messages.length) {
+                        showModal(messages[currentIndex].title, messages[currentIndex].content, messages[currentIndex].hint);
+                        currentIndex++;
+                    } else {
+                        clearInterval(modalInterval);
+                    }
+                }, interval);
+            }
+            
+            // 显示弹窗
+            function showModal(title, content, hint) {
+                // 创建弹窗元素
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-title">${title}</div>
+                    <div class="modal-content">${content}</div>
+                    <div class="modal-hint">${hint}</div>
+                `;
+                
+                // 随机位置
+                const left = 5 + Math.random() * 85; // 5% 到 90%
+                const top = 5 + Math.random() * 85;  // 5% 到 90%
+                
+                modal.style.left = `${left}%`;
+                modal.style.top = `${top}%`;
+                
+                // 添加到页面
+                document.body.appendChild(modal);
+                
+                // 显示弹窗
+                setTimeout(() => {
+                    modal.classList.add('active');
+                }, 10);
+                
+                // 6秒后自动移除
+                setTimeout(() => {
+                    modal.classList.remove('active');
+                    setTimeout(() => {
+                        if (modal.parentNode) {
+                            modal.parentNode.removeChild(modal);
+                        }
+                    }, 300);
+                }, 6000); // 6秒后移除
+            }
+        });
+    </script>
+</body>
+</html>
